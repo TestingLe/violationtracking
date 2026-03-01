@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — NCLC Violation Tracker</title>
+    <meta name="description"
+        content="Secure login portal for the National Christian Life College Student Violation Tracking System.">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            background: linear-gradient(135deg, #f5f1e8 0%, #f9f7f0 30%, #faf8f3 60%, #faf8f3 100%);
+            color: #0A0980;
+            overflow: hidden;
+        }
+
+        /* ── Navbar Sidebar ── */
+        .navbar {
+            width: 260px;
+            background: rgba(10, 9, 128, 0.98);
+            border-right: 2px solid #FFD361;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 2;
+        }
+
+        .navbar-header {
+            text-align: center;
+            margin-bottom: 40px;
+            width: 100%;
+        }
+
+        .navbar-logo {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .navbar-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #FFD361;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .navbar-subtitle {
+            font-size: 0.75rem;
+            color: #b0c5dd;
+            font-weight: 400;
+        }
+
+        .navbar-features {
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 211, 97, 0.1);
+            transition: all 0.3s;
+        }
+
+        .feature-item:hover {
+            background: rgba(255, 211, 97, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 1.1rem;
+        }
+
+        .feature-text {
+            font-size: 0.72rem;
+            color: #c0d0e8;
+            font-weight: 500;
+        }
+
+        /* ── Background Orbs ── */
+        .bg-orbs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.12;
+            animation: float 12s ease-in-out infinite;
+        }
+
+        .orb:nth-child(1) {
+            width: 500px;
+            height: 500px;
+            top: -100px;
+            left: -100px;
+            background: #1F3864;
+        }
+
+        .orb:nth-child(2) {
+            width: 400px;
+            height: 400px;
+            bottom: -80px;
+            right: -80px;
+            background: #FFD361;
+            animation-delay: -4s;
+        }
+
+        .orb:nth-child(3) {
+            width: 300px;
+            height: 300px;
+            top: 50%;
+            left: 50%;
+            background: #00ff88;
+            animation-delay: -8s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(30px, -30px) scale(1.05);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) scale(0.95);
+            }
+        }
+
+        /* ── Login Wrapper ── */
+        .login-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 460px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(10, 9, 128, 0.1);
+            border-radius: 24px;
+            padding: 36px 32px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .login-header .logo {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .login-header h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #0A0980, #1F3864);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+
+        .login-header p {
+            color: #6a7b92;
+            font-size: 0.82rem;
+        }
+
+        /* ── Role Selector Tabs ── */
+        .role-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 24px;
+            background: rgba(10, 9, 128, 0.04);
+            border-radius: 14px;
+            padding: 5px;
+        }
+
+        .role-tab {
+            flex: 1;
+            padding: 10px 8px;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            color: #6a7b92;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .role-tab .role-icon {
+            font-size: 1.2rem;
+        }
+
+        .role-tab:hover {
+            color: #0A0980;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .role-tab.active {
+            background: #fff;
+            color: #0A0980;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+            transform: translateY(-1px);
+        }
+
+        .role-tab.active .role-icon {
+            transform: scale(1.15);
+        }
+
+        /* ── Form ── */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #3a4d6b;
+            margin-bottom: 6px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.95rem;
+            opacity: 0.5;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(10, 9, 128, 0.1);
+            background: rgba(255, 255, 255, 0.9);
+            color: #1B2A4A;
+            font-size: 0.88rem;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #0A0980;
+            box-shadow: 0 0 0 3px rgba(10, 9, 128, 0.08);
+        }
+
+        .form-group input::placeholder {
+            color: #9aa8bd;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0A0980, #1F3864);
+            color: #FFD361;
+            font-size: 0.9rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(10, 9, 128, 0.25);
+            margin-top: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(10, 9, 128, 0.35);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ── Messages ── */
+        .msg {
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-bottom: 14px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .msg.show {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .msg.error {
+            background: rgba(255, 68, 102, 0.1);
+            border: 1px solid rgba(255, 68, 102, 0.2);
+            color: #d93355;
+        }
+
+        .msg.success {
+            background: rgba(0, 180, 100, 0.1);
+            border: 1px solid rgba(0, 180, 100, 0.2);
+            color: #008855;
+        }
+
+        .msg.warning {
+            background: rgba(255, 180, 0, 0.1);
+            border: 1px solid rgba(255, 180, 0, 0.2);
+            color: #aa7700;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-6px);
+            }
+
+            75% {
+                transform: translateX(6px);
+            }
+        }
+
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* ── Password Strength ── */
+        .password-strength {
+            height: 3px;
+            border-radius: 3px;
+            margin-top: 6px;
+            background: rgba(10, 9, 128, 0.06);
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 3px;
+            transition: all 0.4s ease;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 0.72rem;
+            color: #8a9ab0;
+        }
+
+        /* ── Lockout Overlay ── */
+        .lockout-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(6px);
+            border-radius: 24px;
+            z-index: 10;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .lockout-overlay.show {
+            display: flex;
+        }
+
+        .lockout-icon {
+            font-size: 3rem;
+        }
+
+        .lockout-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #d93355;
+        }
+
+        .lockout-timer {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0A0980;
+        }
+
+        .lockout-sub {
+            font-size: 0.75rem;
+            color: #6a7b92;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .navbar {
+                width: 200px;
+                padding: 20px 14px;
+            }
+
+            .navbar-features {
+                display: none;
+            }
+
+            .login-card {
+                padding: 28px 22px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            body {
+                flex-direction: column;
+            }
+
+            .navbar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 2px solid #FFD361;
+                padding: 16px 20px;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .navbar-header {
+                margin-bottom: 0;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .navbar-logo {
+                font-size: 1.6rem;
+                margin-bottom: 0;
+            }
+
+            .navbar-title {
+                font-size: 0.75rem;
+                margin-bottom: 2px;
+            }
+
+            .navbar-subtitle {
+                font-size: 0.65rem;
+            }
+
+            .navbar-features {
+                display: none;
+            }
+
+            .login-wrapper {
+                padding: 16px;
+                align-items: flex-start;
+                margin-top: 10px;
+            }
+
+            .login-card {
+                padding: 26px 18px;
+                border-radius: 18px;
+            }
+
+            .login-header h1 {
+                font-size: 1.25rem;
+            }
+
+            .role-tab {
+                padding: 8px 6px;
+                font-size: 0.72rem;
+            }
+
+            .role-tab .role-icon {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-orbs">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+    </div>
+
+    <!-- Navbar Sidebar -->
+    <div class="navbar">
+        <div class="navbar-header">
+            <span class="navbar-logo">🎓</span>
+            <div class="navbar-title">National Christian Life College, Inc.</div>
+            <div class="navbar-subtitle">Student Violation Tracking System</div>
+        </div>
+
+        <div class="navbar-features">
+            <div class="feature-item">
+                <span class="feature-icon">🔒</span>
+                <span class="feature-text">Secure Authentication</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">📊</span>
+                <span class="feature-text">Real-time Violation Tracking</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">🎯</span>
+                <span class="feature-text">Role-Based Access Control</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">📱</span>
+                <span class="feature-text">Mobile Responsive</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Area -->
+    <div class="login-wrapper">
+        <div class="login-container">
+            <div class="login-card" style="position:relative;">
+
+                <!-- Lockout Overlay -->
+                <div class="lockout-overlay" id="lockoutOverlay">
+                    <span class="lockout-icon">🔐</span>
+                    <div class="lockout-text">Too many failed attempts</div>
+                    <div class="lockout-timer" id="lockoutTimer">60</div>
+                    <div class="lockout-sub">seconds until you can try again</div>
+                </div>
+
+                <div class="login-header">
+                    <span class="logo">🎓</span>
+                    <h1>Violation Tracker</h1>
+                    <p>Sign in to your account</p>
+                </div>
+
+                <!-- Role Tabs -->
+                <div class="role-tabs" id="roleTabs">
+                    <button class="role-tab active" data-role="student" id="tabStudent">
+                        <span class="role-icon">🎒</span>
+                        Student
+                    </button>
+                    <button class="role-tab" data-role="teacher" id="tabTeacher">
+                        <span class="role-icon">📚</span>
+                        Teacher
+                    </button>
+                    <button class="role-tab" data-role="admin" id="tabAdmin">
+                        <span class="role-icon">⚙️</span>
+                        Admin
+                    </button>
+                </div>
+
+                <!-- Messages -->
+                <div class="msg error" id="errorMsg">
+                    <span>⚠️</span>
+                    <span id="errorText"></span>
+                </div>
+                <div class="msg success" id="successMsg">
+                    <span>✅</span>
+                    <span id="successText"></span>
+                </div>
+                <div class="msg warning" id="warningMsg">
+                    <span>⏳</span>
+                    <span id="warningText"></span>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" autocomplete="on">
+                    <div class="form-group" id="surnameGroup">
+                        <label for="loginSurname" id="surnameLabel">Full Name</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon" id="surnameIcon">👤</span>
+                            <input type="text" id="loginSurname" placeholder="Enter your full name" required
+                                autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="form-group" id="emailGroup" style="display:none;">
+                        <label for="loginEmail">Email Address</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">📧</span>
+                            <input type="email" id="loginEmail" placeholder="Enter your email" autocomplete="email" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="loginPassword" placeholder="Enter your password" required
+                                autocomplete="current-password" />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-login" id="loginBtn">
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="footer-text">
+                    Grooming & Uniform Compliance System<br>
+                    <span style="opacity:0.7;">Powered by Supabase</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase_config.js"></script>
+    <script>
+        // ── State ──
+        let selectedRole = 'student';
+        let failedAttempts = 0;
+        const MAX_ATTEMPTS = 5;
+        const LOCKOUT_DURATION = 60; // seconds
+        let lockoutEndTime = null;
+
+        const sb = getSupabaseClient();
+
+        // ── DOM Elements ──
+        const errorMsg = document.getElementById('errorMsg');
+        const errorText = document.getElementById('errorText');
+        const successMsg = document.getElementById('successMsg');
+        const successText = document.getElementById('successText');
+        const warningMsg = document.getElementById('warningMsg');
+        const warningText = document.getElementById('warningText');
+        const loginBtn = document.getElementById('loginBtn');
+        const lockoutOverlay = document.getElementById('lockoutOverlay');
+        const lockoutTimer = document.getElementById('lockoutTimer');
+
+        // ── Message Helpers ──
+        function hideAllMessages() {
+            errorMsg.classList.remove('show');
+            successMsg.classList.remove('show');
+            warningMsg.classList.remove('show');
+        }
+
+        function showError(msg) {
+            hideAllMessages();
+            errorText.textContent = msg;
+            errorMsg.classList.add('show');
+            errorMsg.classList.add('shake');
+            setTimeout(() => errorMsg.classList.remove('shake'), 400);
+        }
+
+        function showSuccess(msg) {
+            hideAllMessages();
+            successText.textContent = msg;
+            successMsg.classList.add('show');
+        }
+
+        function showWarning(msg) {
+            hideAllMessages();
+            warningText.textContent = msg;
+            warningMsg.classList.add('show');
+        }
+
+        // ── Check if already logged in ──
+        (async () => {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+                const profile = await getUserProfile();
+                if (profile) {
+                    redirectToDashboard(profile.role);
+                }
+            }
+        })();
+
+        // ── Role Tab Selection ──
+        const surnameGroup = document.getElementById('surnameGroup');
+        const emailGroup = document.getElementById('emailGroup');
+        const loginSurname = document.getElementById('loginSurname');
+        const loginEmail = document.getElementById('loginEmail');
+
+        function updateLoginFields() {
+            if (selectedRole === 'student') {
+                surnameGroup.style.display = '';
+                emailGroup.style.display = 'none';
+                loginSurname.required = true;
+                loginEmail.required = false;
+                loginEmail.value = '';
+            } else {
+                surnameGroup.style.display = 'none';
+                emailGroup.style.display = '';
+                loginSurname.required = false;
+                loginEmail.required = true;
+                loginSurname.value = '';
+            }
+        }
+
+        document.querySelectorAll('.role-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                selectedRole = tab.getAttribute('data-role');
+                updateLoginFields();
+                hideAllMessages();
+            });
+        });
+
+        // Initialize fields for default role (student)
+        updateLoginFields();
+
+        // ── Lockout Logic ──
+        function isLockedOut() {
+            if (!lockoutEndTime) return false;
+            return Date.now() < lockoutEndTime;
+        }
+
+        function startLockout() {
+            lockoutEndTime = Date.now() + LOCKOUT_DURATION * 1000;
+            lockoutOverlay.classList.add('show');
+
+            const interval = setInterval(() => {
+                const remaining = Math.ceil((lockoutEndTime - Date.now()) / 1000);
+                if (remaining <= 0) {
+                    clearInterval(interval);
+                    lockoutOverlay.classList.remove('show');
+                    lockoutEndTime = null;
+                    failedAttempts = 0;
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+                } else {
+                    lockoutTimer.textContent = remaining;
+                }
+            }, 1000);
+        }
+
+        // ── Login Handler ──
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideAllMessages();
+
+            if (isLockedOut()) {
+                showError('Account temporarily locked. Please wait.');
+                return;
+            }
+
+            const password = document.getElementById('loginPassword').value;
+            let email = '';
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Signing in...';
+
+            try {
+                // For students: look up by surname, construct email
+                if (selectedRole === 'student') {
+                    const fullName = document.getElementById('loginSurname').value.trim();
+                    if (!fullName || !password) {
+                        showError('Please enter your full name and password.');
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'Sign In';
+                        return;
+                    }
+
+                    const { data: students, error: lookupErr } = await sb.rpc('find_student_by_name', {
+                        p_name: fullName
+                    });
+
+                    if (lookupErr || !students || students.length === 0) {
+                        showError('No student found with that name. Please check your spelling.');
+                        failedAttempts++;
+                        if (failedAttempts >= MAX_ATTEMPTS) startLockout();
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'Sign In';
+                        return;
+                    }
+
+                    if (students.length > 1) {
+                        showWarning('Multiple students found. Please contact your admin for help.');
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'Sign In';
+                        return;
+                    }
+
+                    email = students[0].student_lrn + '@student.nclc.local';
+                } else {
+                    // Teacher / Admin: use email
+                    email = document.getElementById('loginEmail').value.trim();
+                    if (!email || !password) {
+                        showError('Please fill in all fields.');
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'Sign In';
+                        return;
+                    }
+                }
+
+                // Sign in with Supabase Auth
+                const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+                if (error) {
+                    failedAttempts++;
+                    const remaining = MAX_ATTEMPTS - failedAttempts;
+
+                    if (failedAttempts >= MAX_ATTEMPTS) {
+                        startLockout();
+                        showError('Too many failed attempts. Account locked for 60 seconds.');
+                    } else if (remaining <= 2) {
+                        showWarning(`Invalid credentials. ${remaining} attempt${remaining > 1 ? 's' : ''} remaining before lockout.`);
+                    } else {
+                        showError('Invalid email or password.');
+                    }
+
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+                    return;
+                }
+
+                // 2. Check profile role matches selected role
+                const profile = await getUserProfile();
+
+                if (!profile) {
+                    showError('Account profile not found. Please contact your administrator.');
+                    await sb.auth.signOut();
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+                    return;
+                }
+
+                if (profile.role !== selectedRole) {
+                    showError(`This account is registered as "${profile.role}", not "${selectedRole}". Please select the correct role.`);
+                    await sb.auth.signOut();
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
+                    return;
+                }
+
+                // 3. Success! Redirect to appropriate dashboard
+                failedAttempts = 0;
+                showSuccess('Login successful! Redirecting...');
+
+                setTimeout(() => {
+                    redirectToDashboard(profile.role);
+                }, 600);
+
+            } catch (err) {
+                console.error('Login error:', err);
+                showError('Connection error. Please check your internet and try again.');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+            }
+        });
+    </script>
+</body>
+
+</html>

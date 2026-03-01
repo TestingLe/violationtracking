@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard — Violation Tracker</title>
+    <meta name="description" content="View and manage all student violation records.">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #FEFCF5 0%, #FFF9EE 40%, #F5F0E8 70%, #EDE8E0 100%);
+            min-height: 100vh;
+            color: #1B2A4A;
+        }
+
+        .top-header {
+            background: linear-gradient(135deg, #0A0980 0%, #0D1B6F 100%);
+            border-bottom: 3px solid #FFD361;
+            padding: 18px 28px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .top-header h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFD361, #FFB600);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* ── Stats Grid ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 22px;
+            border: 1px solid rgba(10, 9, 128, 0.06);
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #0A0980;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.82rem;
+            color: #6a7b92;
+            font-weight: 600;
+        }
+
+        .stat-card.hair .stat-number {
+            color: #cc8800;
+        }
+
+        .stat-card.uniform .stat-number {
+            color: #cc3344;
+        }
+
+        .stat-card.other .stat-number {
+            color: #6c757d;
+        }
+
+        /* ── Search / Filter Bar ── */
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(10, 9, 128, 0.08);
+            background: rgba(255, 255, 255, 0.9);
+            color: #1B2A4A;
+            font-size: 0.88rem;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #0A0980;
+            box-shadow: 0 0 0 3px rgba(10, 9, 128, 0.06);
+        }
+
+        .search-box .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            opacity: 0.4;
+        }
+
+        .filter-select {
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(10, 9, 128, 0.08);
+            background: rgba(255, 255, 255, 0.9);
+            color: #1B2A4A;
+            font-size: 0.85rem;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        /* ── Violations Table ── */
+        .violations-section {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 28px;
+            border: 1px solid rgba(10, 9, 128, 0.06);
+        }
+
+        .violations-section h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #0A0980;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .violations-section h3::before {
+            content: '';
+            width: 3px;
+            height: 16px;
+            background: linear-gradient(180deg, #FFD361, #FFB600);
+            border-radius: 2px;
+        }
+
+        .result-count {
+            margin-left: auto;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: #6a7b92;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid rgba(10, 9, 128, 0.05);
+            font-size: 0.85rem;
+        }
+
+        th {
+            background: rgba(10, 9, 128, 0.03);
+            font-weight: 700;
+            color: #0A0980;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        th:hover {
+            background: rgba(10, 9, 128, 0.06);
+        }
+
+        tr:hover td {
+            background: rgba(10, 9, 128, 0.015);
+        }
+
+        .violation-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.76rem;
+            font-weight: 600;
+        }
+
+        .badge-hair {
+            background: rgba(255, 193, 7, 0.15);
+            color: #cc8800;
+        }
+
+        .badge-uniform {
+            background: rgba(220, 53, 69, 0.12);
+            color: #cc3344;
+        }
+
+        .badge-other {
+            background: rgba(108, 117, 125, 0.12);
+            color: #6c757d;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: #8a9bb5;
+        }
+
+        .empty-state .emoji {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .empty-state h4 {
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+            color: #4a5b75;
+        }
+
+        .empty-state p {
+            font-size: 0.85rem;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            color: #6a7b92;
+            font-size: 0.88rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 14px;
+            }
+
+            th,
+            td {
+                padding: 8px 10px;
+                font-size: 0.78rem;
+            }
+
+            .toolbar {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body data-allowed-roles="teacher">
+    <div class="top-header">
+        <h2>📚 Teacher Dashboard — All Student Violations</h2>
+    </div>
+
+    <div class="container">
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalViolations">-</div>
+                <div class="stat-label">Total Violations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalStudents">-</div>
+                <div class="stat-label">Students with Violations</div>
+            </div>
+            <div class="stat-card hair">
+                <div class="stat-number" id="hairViolations">-</div>
+                <div class="stat-label">Hair Violations</div>
+            </div>
+            <div class="stat-card uniform">
+                <div class="stat-number" id="uniformViolations">-</div>
+                <div class="stat-label">Uniform Violations</div>
+            </div>
+        </div>
+
+        <!-- Search / Filter Bar -->
+        <div class="toolbar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search by student name or LRN..." autocomplete="off" />
+            </div>
+            <select class="filter-select" id="typeFilter">
+                <option value="">All Types</option>
+                <option value="hair">Hair Violations</option>
+                <option value="uniform">Uniform Violations</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+
+        <!-- Violations Table -->
+        <div class="violations-section">
+            <h3>
+                All Student Violations
+                <span class="result-count" id="resultCount"></span>
+            </h3>
+            <div id="violationsContent">
+                <div class="loading-spinner">⏳ Loading violations...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase_config.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        let allViolations = [];
+
+        window.addEventListener('auth-ready', async () => {
+            await loadViolations();
+
+            // Search & filter listeners
+            document.getElementById('searchInput').addEventListener('input', filterViolations);
+            document.getElementById('typeFilter').addEventListener('change', filterViolations);
+        });
+
+        async function loadViolations() {
+            const sb = getSupabaseClient();
+
+            // Teachers can see all violations (RLS policy allows SELECT for teachers)
+            const { data, error } = await sb
+                .from('violations')
+                .select('*, students:student_id(name, lrn, sex, grade, section)')
+                .order('created_at', { ascending: false });
+
+            const content = document.getElementById('violationsContent');
+
+            if (error) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <span class="emoji">⚠️</span>
+                        <h4>Error loading records</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            allViolations = data || [];
+            updateStats(allViolations);
+            renderViolations(allViolations);
+        }
+
+        function updateStats(violations) {
+            const total = violations.length;
+            const hair = violations.filter(v => v.violation_type.toLowerCase().includes('hair')).length;
+            const uniform = violations.filter(v => v.violation_type.toLowerCase().includes('uniform')).length;
+            const students = new Set(violations.map(v => v.student_id)).size;
+
+            document.getElementById('totalViolations').textContent = total;
+            document.getElementById('totalStudents').textContent = students;
+            document.getElementById('hairViolations').textContent = hair;
+            document.getElementById('uniformViolations').textContent = uniform;
+        }
+
+        function filterViolations() {
+            const search = document.getElementById('searchInput').value.toLowerCase().trim();
+            const typeFilter = document.getElementById('typeFilter').value;
+
+            let filtered = allViolations;
+
+            if (search) {
+                filtered = filtered.filter(v => {
+                    const name = (v.students?.name || '').toLowerCase();
+                    const lrn = (v.students?.lrn || '').toLowerCase();
+                    return name.includes(search) || lrn.includes(search);
+                });
+            }
+
+            if (typeFilter) {
+                if (typeFilter === 'other') {
+                    filtered = filtered.filter(v => {
+                        const t = v.violation_type.toLowerCase();
+                        return !t.includes('hair') && !t.includes('uniform');
+                    });
+                } else {
+                    filtered = filtered.filter(v =>
+                        v.violation_type.toLowerCase().includes(typeFilter)
+                    );
+                }
+            }
+
+            renderViolations(filtered);
+        }
+
+        function renderViolations(violations) {
+            const content = document.getElementById('violationsContent');
+            const countEl = document.getElementById('resultCount');
+            countEl.textContent = `${violations.length} record${violations.length !== 1 ? 's' : ''}`;
+
+            if (violations.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <span class="emoji">📭</span>
+                        <h4>No Violations Found</h4>
+                        <p>No records match your search criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            content.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student</th>
+                            <th>LRN</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Gender</th>
+                            <th>Reported By</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${violations.map((v, i) => {
+                const type = v.violation_type.toLowerCase();
+                const badgeClass = type.includes('hair') ? 'badge-hair' :
+                    type.includes('uniform') ? 'badge-uniform' : 'badge-other';
+                const date = new Date(v.created_at).toLocaleDateString('en-PH', {
+                    year: 'numeric', month: 'short', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+                const name = v.students?.name || 'Unknown';
+                const lrn = v.students?.lrn || '-';
+                const sex = v.students?.sex || '-';
+                return `
+                                <tr>
+                                    <td>${i + 1}</td>
+                                    <td><strong>${name}</strong></td>
+                                    <td style="font-family:monospace;font-size:0.8rem;">${lrn}</td>
+                                    <td><span class="violation-badge ${badgeClass}">${v.violation_type}</span></td>
+                                    <td>${v.description || '-'}</td>
+                                    <td>${sex}</td>
+                                    <td>${v.reported_by || 'System'}</td>
+                                    <td>${date}</td>
+                                </tr>
+                            `;
+            }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+    </script>
+</body>
+
+</html>
